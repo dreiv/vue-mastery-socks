@@ -1,12 +1,26 @@
 <html>
-  <head>
-    <link rel="stylesheet" href="index.css" />
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  </head>
 
-  <body>
-    <div id="app"></div>
+<head>
+  <link rel="stylesheet" href="index.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
 
-    <script src="index.js"></script>
-  </body>
+<body>
+  <nav class="nav-bar"></nav>
+
+  <div id="app">
+    <div class="product">
+      <div class="product-image">
+        <img :src="image" alt="Socks">
+      </div>
+
+      <div class="product-info">
+        <h1>{{ product }}</h1>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+
 </html>
