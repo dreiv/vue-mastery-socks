@@ -1,3 +1,75 @@
+Vue.filter('capitalize', (value) => {
+  if (!value) return '';
+  value = value.toString();
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
+});
+
+
+Vue.component('product-review', {
+  template: `
+    <form @submit.prevent="onSubmit" class="review-form">
+      <label>
+        Name:<br>
+        <input v-model="name">
+      </label>
+
+      <label>
+        Review:<br>
+        <textarea v-model="review"/>
+      </label>
+
+      <label>
+        Rating:
+        <select v-model.number="rating">
+        <option v-for="option in 5" :value="option">
+          {{ option }}
+        </option>
+        </select>
+      </label>
+
+      <p>
+        <input type="submit" value="Submit">
+      </p>
+
+      <p v-if="errors.length">
+        <b>Please correct the following error(s):</b>
+
+        <ul>
+          <li v-for="error in errors">{{ error }}</li>
+        </ul>
+      </p>
+    </form>
+  `,
+  data: () => ({
+    name: null,
+    review: null,
+    rating: null,
+    errors: []
+  }),
+  methods: {
+    onSubmit() {
+      if (this.name && this.review && this.rating) {
+        let productReview = {
+          name: this.name,
+          review: this.review,
+          rating: this.rating
+        };
+        this.$emit('review-submitted', productReview);
+
+        this.name = null;
+        this.review = null;
+        this.rating = null;
+      } else {
+        if (!this.name) this.errors.push('Name required');
+        if (!this.review) this.errors.push('Review required');
+        if (!this.rating) this.errors.push('Rating required');
+      }
+
+    }
+  }
+});
+
 Vue.component('product', {
   props: {
     premium: {
@@ -30,42 +102,58 @@ Vue.component('product', {
         <button @click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">
           Add to Cart
         </button>
+
+        <div>
+          <h2>Reviews</h2>
+          <p v-if="!reviews.length">There are no reviews yet.</p>
+          <ul v-else>
+            <li v-for="review in reviews">
+              <p v-for="(value, name) in review">
+                {{ name | capitalize }}: {{ value }}
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        <product-review @review-submitted="addReview"/>
       </div>
     </div>
   `,
-  data() {
-    return {
-      brand: 'Vue Mastery',
-      product: 'Socks',
-      selectedVariant:0,
-      altText: "A pair of socks",
-      details: [
-        '80% cotton',
-        '20% polyester',
-        'Gender-neutral'
-      ],
-      variants: [
-        {
-          variantId: 2234,
-          variantColor: 'green',
-          variantImage: './assets/vmSocks-green.png',
-          variantQuantity: 10
-        },
-        {
-          variantId: 2235,
-          variantColor: 'blue',
-          variantImage: './assets/vmSocks-blue.png',
-          variantQuantity: 0
-        }
-      ]
-    }
-  },
+  data: () => ({
+    brand: 'Vue Mastery',
+    product: 'Socks',
+    selectedVariant: 0,
+    altText: "A pair of socks",
+    details: [
+      '80% cotton',
+      '20% polyester',
+      'Gender-neutral'
+    ],
+    variants: [
+      {
+        variantId: 2234,
+        variantColor: 'green',
+        variantImage: './assets/vmSocks-green.png',
+        variantQuantity: 10
+      },
+      {
+        variantId: 2235,
+        variantColor: 'blue',
+        variantImage: './assets/vmSocks-blue.png',
+        variantQuantity: 0
+      }
+    ],
+    reviews: []
+  }),
   methods: {
     addToCart() {
       this.$emit('add-to-cart', this.selectedVariant.variantId);
     },
     updateProduct(index) {
       this.selectedVariant = index;
+    },
+    addReview(productReview) {
+      this.reviews.push(productReview);
     }
   },
   computed: {
@@ -82,7 +170,7 @@ Vue.component('product', {
       return this.premium ? 'Free' : '2.99';
     }
   }
-})
+});
 
 var app = new Vue({
   el: '#app',
